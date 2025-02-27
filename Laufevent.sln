@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35327.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laufevent", "Laufevent\Laufevent.csproj", "{99C5923F-6A50-42A2-B0F5-7E13E01DC2CB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{99C5923F-6A50-42A2-B0F5-7E13E01DC2CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99C5923F-6A50-42A2-B0F5-7E13E01DC2CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99C5923F-6A50-42A2-B0F5-7E13E01DC2CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99C5923F-6A50-42A2-B0F5-7E13E01DC2CB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6C25B090-C3BD-4117-8D4F-3B75BD98F0B4}
+	EndGlobalSection
+EndGlobal
