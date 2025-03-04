@@ -21,12 +21,12 @@ jobs:
 
       - name: Build and tag Docker image
         run: |
-          IMAGE_NAME=ghcr.io/sz-laeuft/laufevent:latest
+          IMAGE_NAME=ghcr.io/sz-laeuft/laufevent
           docker build -t $IMAGE_NAME:latest .
           docker tag $IMAGE_NAME:latest $IMAGE_NAME:${{ github.sha }}
 
       - name: Push Docker image to GHCR
         run: |
-          IMAGE_NAME=ghcr.io/sz-laeuft/laufevent:latest
+          IMAGE_NAME=ghcr.io/sz-laeuft/laufevent
           docker push $IMAGE_NAME:latest
           docker push $IMAGE_NAME:${{ github.sha }}
