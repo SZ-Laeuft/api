@@ -1,4 +1,4 @@
-services:
+﻿services:
   szl-api:
     container_name: szl-api
     image: "ghcr.io/sz-laeuft/laufevent:latest"
@@ -10,5 +10,3 @@ services:
       - ASPNETCORE_URLS=https://+:443;http://+:80
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
       - ASPNETCORE_Kestrel__Certificates__Default__Password=YourPassword123!
-    volumes:
-      - ~/.aspnet/https:/https:ro
