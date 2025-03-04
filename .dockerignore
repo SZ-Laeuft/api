@@ -1,4 +1,9 @@
-﻿bin/
+﻿ bin/
 obj/
-.vs/
 *.user
+*.vs
+.vscode/
+Dockerfile
+docker-compose*
+.git
+

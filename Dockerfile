@@ -1,19 +1,28 @@
-﻿# Use the official .NET SDK image for building the project
+﻿# Use .NET SDK to build the app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Copy everything and restore dependencies
-COPY . ./
+# Copy everything and build
+COPY *.sln ./
+COPY Laufevent/*.csproj ./Laufevent/
 RUN dotnet restore
-RUN dotnet publish -c Release -o /out
 
-# Use the runtime image to run the app
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+COPY Laufevent/. ./Laufevent/
+WORKDIR /app/Laufevent
+RUN dotnet publish -c Release -o /publish
+
+# Use ASP.NET runtime for running the app
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=build /out .
+COPY --from=build /publish .
 
-# Expose the correct port
-EXPOSE 44320
+# Expose HTTP (80) and HTTPS (443)
+EXPOSE 80
+EXPOSE 443
 
-# Set the entrypoint for the application
-CMD ["dotnet", "Laufevent.dll"]
+# Set environment variables for HTTPS
+ENV ASPNETCORE_URLS="https://+:443;http://+:80"
+ENV ASPNETCORE_HTTPS_PORT=443
+
+# Run the app
+ENTRYPOINT ["dotnet", "Laufevent.dll"]
