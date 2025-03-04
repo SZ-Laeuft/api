@@ -16,13 +16,17 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /publish .
 
+# 🔹 Copy HTTPS certificate into the container
+COPY https/aspnetapp.pfx /https/aspnetapp.pfx
+
 # Expose HTTP (80) and HTTPS (443)
 EXPOSE 80
 EXPOSE 443
 
-# Set environment variables for HTTPS
+# 🔹 Set environment variables for HTTPS
 ENV ASPNETCORE_URLS="https://+:443;http://+:80"
-ENV ASPNETCORE_HTTPS_PORT=443
+ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+ENV ASPNETCORE_Kestrel__Certificates__Default__Password="YourPassword"
 
 # Run the app
 ENTRYPOINT ["dotnet", "Laufevent.dll"]
