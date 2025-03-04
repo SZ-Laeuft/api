@@ -1,8 +1,7 @@
-﻿version: "3.9"
 services:
-  api:
-    container_name: laufevent-api
-    build: .
+  szl-api:
+    container_name: szl-api
+    image: "ghcr.io/sz-laeuft/laufevent:latest"
     ports:
       - "44320:443"
       - "5021:80"
