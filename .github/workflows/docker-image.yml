@@ -22,7 +22,7 @@ jobs:
       - name: Build and tag Docker image
         run: |
           IMAGE_NAME=ghcr.io/sz-laeuft/laufevent
-          docker build --platform linux/amd64,linux/arm64 -t $IMAGE_NAME:latest .
+          docker buildx build --platform linux/amd64,linux/arm64 -t $IMAGE_NAME:latest .
           docker tag $IMAGE_NAME:latest $IMAGE_NAME:${{ github.sha }}
 
       - name: Push Docker image to GHCR
