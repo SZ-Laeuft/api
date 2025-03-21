@@ -7,48 +7,48 @@ using System.Threading.Tasks;
 namespace Laufevent.Controllers
 {
     /// <summary>
-    /// Controller for deleting users by their unique ID.
+    /// Controller for deleting users by their unique UID.
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class DeleteUserByIdController : ControllerBase
+    public class DeleteUserByUUidController : ControllerBase
     {
         /// <summary>
-        /// Deletes a user by their ID.
+        /// Deletes a user by their Uid.
         /// </summary>
-        /// <param name="id">The ID of the user to be deleted.</param>
+        /// <param name="Uid">The Uid of the user to be deleted.</param>
         /// <returns>Returns a success or error message based on the outcome of the deletion.</returns>
-        [HttpDelete("{id}")]
+        [HttpDelete("{Uid}")]
         [SwaggerOperation(
-            Summary = "Delete a user by ID",
-            Description = "Deletes a user from the database based on their unique user ID."
+            Summary = "Delete a user by Uid",
+            Description = "Deletes a user from the database based on their unique user Uid."
         )]
         [SwaggerResponse(200, "User successfully deleted.", typeof(string))]
         [SwaggerResponse(404, "User not found.")]
         [SwaggerResponse(500, "Internal Server Error - Database issue or unexpected error.")]
-        public async Task<IActionResult> DeleteUserById(int id)
+        public async Task<IActionResult> DeleteUserByUid(double Uid)
         {
             try
             {
                 using (var connection = new NpgsqlConnection(ConnectionString.connectionstring))
                 {
                     await connection.OpenAsync();
-                    var query = "DELETE FROM Userinformation WHERE id = @id";
+                    var query = "DELETE FROM Userinformation WHERE Uid = @Uid";
 
                     using (var command = new NpgsqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@id", id);
+                        command.Parameters.AddWithValue("@Uid", Uid);
 
                         // Execute the delete command and check how many rows were affected
                         int rowsAffected = await command.ExecuteNonQueryAsync();
 
                         if (rowsAffected > 0)
                         {
-                            return Ok($"User with ID {id} has been deleted.");
+                            return Ok($"User with Uid {Uid} has been deleted.");
                         }
                         else
                         {
-                            return NotFound($"User with ID {id} not found.");
+                            return NotFound($"User with Uid {Uid} not found.");
                         }
                     }
                 }
