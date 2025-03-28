@@ -5,10 +5,10 @@
     ports:
       - "44320:443"
       - "5021:80"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=https://+:443;http://+:80
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/certs/aspnetapp.pfx
       - ASPNETCORE_Kestrel__Certificates__Default__Password=htl
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
     volumes:
-      - ./certs/aspnetapp.pfx:/https/aspnetapp.pfx:ro
+      - ~/.aspnet/https:/https:ro
