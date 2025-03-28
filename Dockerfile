@@ -27,7 +27,7 @@ EXPOSE 443
 
 # Set environment variables for HTTPS (path must match volume mount)
 ENV ASPNETCORE_URLS="https://+:443;http://+:80"
-ENV ASPNETCORE_Kestrel__Certificates__Default__Path="/https/aspnetapp.pfx"
+ENV ASPNETCORE_Kestrel__Certificates__Default__Path="/certs/aspnetapp.pfx"
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password="htl"
 
 # Run the app
