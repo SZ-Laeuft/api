@@ -21,8 +21,8 @@ COPY --from=build /publish .
 # Create directory for HTTPS certificate
 RUN mkdir -p /https
 
-# ✅ Copy your existing cert into the container
-COPY certs/aspnetapp.pfx /https/aspnetapp.pfx
+# Copy your existing cert into the container
+COPY ./certs/aspnetapp.pfx /https/aspnetapp.pfx
 
 # Expose HTTP (80) and HTTPS (443)
 EXPOSE 80
