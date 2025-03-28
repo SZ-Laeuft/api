@@ -18,20 +18,17 @@ WORKDIR /app
 # Copy published app from build stage
 COPY --from=build /publish .
 
-# Create directory for HTTPS certificate
+# Create directory for HTTPS certificate (optional, volume will handle it)
 RUN mkdir -p /https
-
-# Copy your existing cert into the container
-COPY ./certs/aspnetapp.pfx /https/aspnetapp.pfx
 
 # Expose HTTP (80) and HTTPS (443)
 EXPOSE 80
 EXPOSE 443
 
-# Set environment variables for HTTPS
+# Set environment variables for HTTPS (path must match volume mount)
 ENV ASPNETCORE_URLS="https://+:443;http://+:80"
 ENV ASPNETCORE_Kestrel__Certificates__Default__Path="/https/aspnetapp.pfx"
-ENV ASPNETCORE_Kestrel__Certificates__Default__Password="YourPassword123!"
+ENV ASPNETCORE_Kestrel__Certificates__Default__Password="htl"
 
 # Run the app
 ENTRYPOINT ["dotnet", "Laufevent.dll"]

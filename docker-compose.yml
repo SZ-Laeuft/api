@@ -11,4 +11,4 @@
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
       - ASPNETCORE_Kestrel__Certificates__Default__Password=htl
     volumes:
-      - ./certs:/https:ro
+      - ./certs/aspnetapp.pfx:/https/aspnetapp.pfx:ro
