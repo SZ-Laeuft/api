@@ -44,8 +44,8 @@ namespace Laufevent.Controllers
                         command.Parameters.AddWithValue("@firstname", userInfo.firstname);
                         command.Parameters.AddWithValue("@lastname", userInfo.lastname);
                         command.Parameters.AddWithValue("@uid", userInfo.uid);  
-                        command.Parameters.AddWithValue("@school_class", DBNull.Value);  // No school class
-                        command.Parameters.AddWithValue("@early_starter", DBNull.Value);  // No early starter info
+                        command.Parameters.AddWithValue("@school_class", DBNull.Value);
+                        command.Parameters.AddWithValue("@early_starter", DBNull.Value); 
                         command.Parameters.AddWithValue("@organisation", userInfo.organisation);
 
                         var newId = await command.ExecuteScalarAsync();  // Fetch the newly inserted ID

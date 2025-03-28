@@ -14,7 +14,15 @@ RUN dotnet publish -c Release -o /publish
 # Use ASP.NET runtime for running the app
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
+
+# Copy published app from build stage
 COPY --from=build /publish .
+
+# Create directory for HTTPS certificate
+RUN mkdir -p /https
+
+# ✅ Copy your existing cert into the container
+COPY certs/aspnetapp.pfx /https/aspnetapp.pfx
 
 # Expose HTTP (80) and HTTPS (443)
 EXPOSE 80
@@ -24,12 +32,6 @@ EXPOSE 443
 ENV ASPNETCORE_URLS="https://+:443;http://+:80"
 ENV ASPNETCORE_Kestrel__Certificates__Default__Path="/https/aspnetapp.pfx"
 ENV ASPNETCORE_Kestrel__Certificates__Default__Password="YourPassword123!"
-
-# Generate self-signed certificate inside the container
-RUN apt-get update && apt-get install -y openssl \
-    && mkdir -p /https \
-    && openssl req -x509 -newkey rsa:4096 -keyout /https/aspnetapp.key -out /https/aspnetapp.crt -days 365 -nodes -subj "/CN=localhost" \
-    && openssl pkcs12 -export -out /https/aspnetapp.pfx -inkey /https/aspnetapp.key -in /https/aspnetapp.crt -passout pass:YourPassword123!
 
 # Run the app
 ENTRYPOINT ["dotnet", "Laufevent.dll"]

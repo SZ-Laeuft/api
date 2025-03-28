@@ -47,7 +47,7 @@ namespace Laufevent.Controllers
 
                             while (await reader.ReadAsync())
                             {
-                                times.Add(reader.GetDateTime(0)); // Fetch scan times as DateTime
+                                times.Add(reader.GetDateTime(0));
                             }
 
                             if (times.Count < 2)
@@ -55,12 +55,12 @@ namespace Laufevent.Controllers
                                 return NotFound($"Not enough data for UID {uid} to calculate lap duration.");
                             }
 
-                            var lapDuration = times[0] - times[1]; // Calculate the time difference
+                            var lapDuration = times[0] - times[1];
 
                             var result = new
                             {
                                 UId = uid,
-                                LapDuration = lapDuration.ToString(@"hh\:mm\:ss") // Format as hours:minutes:seconds
+                                LapDuration = lapDuration.ToString(@"hh\:mm\:ss")
                             };
 
                             return Ok(result);

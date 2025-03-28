@@ -38,8 +38,7 @@ namespace Laufevent.Controllers
                     using (var command = new NpgsqlCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@Uid", Uid);
-
-                        // Execute the delete command and check how many rows were affected
+                        
                         int rowsAffected = await command.ExecuteNonQueryAsync();
 
                         if (rowsAffected > 0)

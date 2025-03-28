@@ -27,7 +27,7 @@ namespace Laufevent.Controllers
         {
             try
             {
-                DateTime currentTime = DateTime.UtcNow; // Use UTC for consistency
+                DateTime currentTime = DateTime.UtcNow;
 
                 using (var connection = new NpgsqlConnection(ConnectionString.connectionstring))
                 {
@@ -36,7 +36,7 @@ namespace Laufevent.Controllers
 
                     using (var command = new NpgsqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@UID", userInfo.uid); // PostgreSQL supports bigints, use appropriate type
+                        command.Parameters.AddWithValue("@UID", userInfo.uid);
                         command.Parameters.AddWithValue("@Scantime", currentTime);
 
                         var rowsAffected = await command.ExecuteNonQueryAsync();

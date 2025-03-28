@@ -33,7 +33,7 @@ namespace Laufevent.Controllers
                     var query = @"
                         INSERT INTO Userinformation (firstname, lastname, uid, school_class, organisation, early_starter) 
                         VALUES (@firstname, @lastname, @uid, @school_class, @organisation, @early_starter)
-                        RETURNING id;"; // PostgreSQL equivalent of SCOPE_IDENTITY()
+                        RETURNING id;";
 
                     using (var command = new NpgsqlCommand(query, connection))
                     {
@@ -42,9 +42,9 @@ namespace Laufevent.Controllers
                         command.Parameters.AddWithValue("@uid", userInfo.uid);
                         command.Parameters.AddWithValue("@school_class", userInfo.school_class);
                         command.Parameters.AddWithValue("@organisation", userInfo.organisation );
-                        command.Parameters.AddWithValue("@early_starter", DBNull.Value); // Adjust if needed
+                        command.Parameters.AddWithValue("@early_starter", DBNull.Value); 
 
-                        var newUserId = await command.ExecuteScalarAsync();  // Fetch the newly inserted ID
+                        var newUserId = await command.ExecuteScalarAsync();
                         return Ok(new { Id = newUserId, Message = "Data inserted successfully." });
                     }
                 }
