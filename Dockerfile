@@ -18,8 +18,11 @@ WORKDIR /app
 # Copy published app from build stage
 COPY --from=build /publish .
 
-# Create directory for HTTPS certificate (optional, volume will handle it)
-RUN mkdir -p /https
+# Copy the HTTPS certificate
+COPY https/aspnetapp.pfx /https/aspnetapp.pfx
+
+# Ensure correct permissions for the certificate
+RUN chmod 644 /https/aspnetapp.pfx
 
 # Expose HTTP (80) and HTTPS (443)
 EXPOSE 80
