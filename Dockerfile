@@ -1,35 +1,28 @@
-# Build Stage
+﻿# Use .NET SDK to build the app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# Copy solution and project files
+# Copy everything and build
 COPY *.sln ./
 COPY Laufevent/*.csproj ./Laufevent/
-
-# Restore dependencies
 RUN dotnet restore
 
-# Copy the remaining source code
 COPY Laufevent/. ./Laufevent/
-
-# Set working directory to the project folder
 WORKDIR /app/Laufevent
-
-# Publish the application to /publish folder
 RUN dotnet publish -c Release -o /publish
 
-# Runtime Stage
+# Use ASP.NET runtime for running the app
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
+COPY --from=build /publish .
 
-# Copy the published output from the build stage
-COPY --from=build /publish ./
-
-# Set the environment variable to ensure Kestrel binds to HTTP only
-ENV ASPNETCORE_URLS=http://+:80
-
-# Expose port 80 for HTTP traffic
+# Expose HTTP (80) and HTTPS (443)
 EXPOSE 80
+EXPOSE 443
 
-# Set the entry point for the container to run the app
+# Set environment variables for HTTPS
+ENV ASPNETCORE_URLS="https://+:443;http://+:80"
+ENV ASPNETCORE_HTTPS_PORT=443
+
+# Run the app
 ENTRYPOINT ["dotnet", "Laufevent.dll"]
