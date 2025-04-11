@@ -3,10 +3,6 @@
   "iisSettings": {
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://100.122.110.7:46424",
-      "sslPort": 44320
-    }
   },
   "profiles": {
     "http": {
