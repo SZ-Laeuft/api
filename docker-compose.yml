@@ -3,6 +3,4 @@
     container_name: szl-api
     image: "ghcr.io/sz-laeuft/laufevent:latest"
     ports:
-      - "44320:443"
-      - "5021:80"
-   
+      - "44320:80"
