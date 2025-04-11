@@ -40,6 +40,7 @@ app.UseSwaggerUI(c =>
 });
 
 // Remove HTTPS redirection (we are using HTTP)
+app.UseHttpsRedirection(); // COMMENT this line to disable HTTPS redirection
 app.UseAuthorization();
 app.MapControllers();
 
