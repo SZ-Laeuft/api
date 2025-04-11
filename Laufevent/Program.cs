@@ -32,9 +32,9 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = "swagger"; // Swagger is available at /swagger
 });
 
-// Force HTTPS redirection
-app.UseHttpsRedirection();
+// Remove HTTPS redirection (we are using HTTP)
 app.UseAuthorization();
 app.MapControllers();
 
+// Run the app (It will now be running over HTTP)
 app.Run();
