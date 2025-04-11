@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Annotations;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +22,13 @@ builder.Services.AddSwaggerGen(c =>
     c.EnableAnnotations(); // Enable attributes for documentation
 });
 
-// Build the app
+// Explicitly configure Kestrel to use HTTP only
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // Listen on HTTP (port 5000)
+    options.ListenLocalhost(5000);  // Make sure it listens on HTTP
+});
+
 var app = builder.Build();
 
 // Enable Swagger in all environments
