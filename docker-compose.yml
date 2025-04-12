@@ -1,11 +1,11 @@
-version: '3.8'
+﻿version: '3.8'
 
 services:
   szl-api:
     container_name: szl-api
     image: "ghcr.io/sz-laeuft/laufevent:latest"
     ports:
-      - "44320:80"  # Keep this mapping from container port 80 to host port 44320
+      - "8080:80"  # Keep this mapping from container port 80 to host port 44320
     environment:
       - ASPNETCORE_URLS=http://+:80  # Make sure Kestrel listens on HTTP (not HTTPS)
     restart: always  # Optional: Automatically restart container if it fails
