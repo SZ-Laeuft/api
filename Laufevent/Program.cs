@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Annotations;
@@ -25,8 +26,9 @@ builder.Services.AddSwaggerGen(c =>
 // Explicitly configure Kestrel to use HTTP only
 builder.WebHost.ConfigureKestrel(options =>
 {
-    // Listen on HTTP (port 5000)
-    options.ListenLocalhost(5000);  // Make sure it listens on HTTP
+        // Listen on HTTP (port 8080) and bind to all network interfaces (0.0.0.0)
+        options.Listen(IPAddress.Any, 8080);  // Listen on all available network interfaces
+
 });
 
 var app = builder.Build();
@@ -40,7 +42,7 @@ app.UseSwaggerUI(c =>
 });
 
 // Remove HTTPS redirection (we are using HTTP)
-app.UseHttpsRedirection(); // COMMENT this line to disable HTTPS redirection
+// app.UseHttpsRedirection(); // COMMENT this line to disable HTTPS redirection
 app.UseAuthorization();
 app.MapControllers();
 
