@@ -3,9 +3,10 @@
 services:
   szl-api:
     container_name: szl-api
-    image: "szl-api:latest"#"ghcr.io/sz-laeuft/laufevent:latest"
+    image: "szl-api:latest"  # or "ghcr.io/sz-laeuft/laufevent:latest"
+    build: .
     ports:
-      - "8080:8080"  
+      - "8080:8080"
     environment:
-      - ASPNETCORE_URLS=http://+:8080  # Make sure Kestrel listens on HTTP (not HTTPS)
-    restart: always  # Optional: Automatically restart container if it fails
+      - ASPNETCORE_URLS=http://+:8080  
+    restart: always 
