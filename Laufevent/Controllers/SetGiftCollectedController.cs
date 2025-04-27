@@ -29,39 +29,44 @@ namespace Laufevent.Controllers
         {
             try
             {
+                // Create the connection object and ensure it's disposed of correctly.
                 using (var connection = new NpgsqlConnection(ConnectionString.connectionstring))
                 {
                     await connection.OpenAsync();
 
-                    // First, retrieve the user's gift statuses to check if they are set to true
+                    // First, check if the user exists in the USER_GIFTS table.
                     var checkQuery = @"
                         SELECT gift_1, gift_2, gift_3
-                        FROM USER_GIFTS
+                        FROM user_gifts
                         WHERE uid = @uid";
 
+                    // Execute the check command and await its completion before proceeding.
                     using (var checkCommand = new NpgsqlCommand(checkQuery, connection))
                     {
                         checkCommand.Parameters.AddWithValue("@uid", uid);
 
+                        // Ensure the reader is fully consumed before proceeding with the update.
                         using (var reader = await checkCommand.ExecuteReaderAsync())
                         {
                             if (await reader.ReadAsync())
                             {
-                                // Prepare the update query
+                                // Prepare the update query to set the 'gift_X_collected' flags based on 'gift_X' values.
                                 var updateQuery = @"
-                                    UPDATE USER_GIFTS
+                                    UPDATE user_gifts
                                     SET 
-                                        gift_1_collected = CASE WHEN gift_1 = true THEN true ELSE gift_1_collected END,
-                                        gift_2_collected = CASE WHEN gift_2 = true THEN true ELSE gift_2_collected END,
-                                        gift_3_collected = CASE WHEN gift_3 = true THEN true ELSE gift_3_collected END
+                                        gift_1_collected = CASE WHEN gift_1 THEN true ELSE gift_1_collected END,
+                                        gift_2_collected = CASE WHEN gift_2 THEN true ELSE gift_2_collected END,
+                                        gift_3_collected = CASE WHEN gift_3 THEN true ELSE gift_3_collected END
                                     WHERE uid = @uid";
 
+                                // Execute the update command after the check has completed.
                                 using (var updateCommand = new NpgsqlCommand(updateQuery, connection))
                                 {
                                     updateCommand.Parameters.AddWithValue("@uid", uid);
 
                                     var rowsAffected = await updateCommand.ExecuteNonQueryAsync();
 
+                                    // Return appropriate responses based on the number of affected rows.
                                     if (rowsAffected > 0)
                                     {
                                         return Ok($"Gift collection status for user with UID {uid} has been updated.");
@@ -74,6 +79,7 @@ namespace Laufevent.Controllers
                             }
                             else
                             {
+                                // User was not found.
                                 return NotFound($"User with UID {uid} not found.");
                             }
                         }
