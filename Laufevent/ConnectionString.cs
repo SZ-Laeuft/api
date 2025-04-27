@@ -1,6 +1,6 @@
 public class ConnectionString
 {
     public static readonly string connectionstring =
-        "Host=100.122.110.7;Port=5432;Database=laufevent;Username=postgres;Password=Szl-20010901;";
+        "Host=100.102.196.30;Port=5432;Database=postgres;Username=admin;Password=Szl-20010901;";
 
 }
