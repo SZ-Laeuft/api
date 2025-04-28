@@ -120,14 +120,14 @@ namespace Laufevent.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public partial class ReadUIDController : ControllerBase
+    public class ReadUIDController : ControllerBase
     {
         /// <summary>
         /// Retrieves user information based on the provided UID.
         /// </summary>
         /// <param name="uid">The UID of the user.</param>
         /// <returns>Returns the user details if found, otherwise a 404 not found error.</returns>
-        [HttpGet]
+        [HttpGet("ReadByUID")]
         [SwaggerOperation(
             Summary = "Get user details by uid",
             Description = "Fetches the complete user information for the given uid."
@@ -200,7 +200,7 @@ namespace Laufevent.Controllers
         /// <param name="firstName">The user's first name.</param>
         /// <param name="lastName">The user's last name.</param>
         /// <returns>Returns the user details if found, otherwise a 404 not found error.</returns>
-        [HttpGet]
+        [HttpGet("ReadByName")]
         [SwaggerOperation(
             Summary = "Get user details by first and last name",
             Description = "Fetches the complete user information based on the first and last name."
