@@ -7,48 +7,50 @@ using System.Threading.Tasks;
 namespace Laufevent.Controllers
 {
     /// <summary>
-    /// Controller for deleting users by their unique UID.
+    /// Controller for managing user information (create, read, delete).
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class DeleteUserByUUidController : ControllerBase
+    public class UserController : ControllerBase
     {
+        #region Create User
+
         /// <summary>
-        /// Deletes a user by their Uid.
+        /// Inserts a new user with all information (UID, school class, organization, etc.)
         /// </summary>
-        /// <param name="Uid">The Uid of the user to be deleted.</param>
-        /// <returns>Returns a success or error message based on the outcome of the deletion.</returns>
-        [HttpDelete("{Uid}")]
+        /// <param name="userInfo">User information including first name, last name, UID, school class, organization, and early starter status.</param>
+        /// <returns>Returns the newly created user ID along with a success message.</returns>
+        [HttpPost("create/with-class")]
         [SwaggerOperation(
-            Summary = "Delete a user by Uid",
-            Description = "Deletes a user from the database based on their unique user Uid."
+            Summary = "Create a user with all information",
+            Description = "Inserts user data (first name, last name, UID, school class, organization, early starter) into the database."
         )]
-        [SwaggerResponse(200, "User successfully deleted.", typeof(string))]
-        [SwaggerResponse(404, "User not found.")]
-        [SwaggerResponse(500, "Internal Server Error - Database issue or unexpected error.")]
-        public async Task<IActionResult> DeleteUserByUid(double Uid)
+        [SwaggerResponse(200, "Data inserted successfully.", typeof(object))]
+        [SwaggerResponse(400, "Bad Request - Invalid data provided.")]
+        [SwaggerResponse(500, "Internal Server Error.")]
+        public async Task<IActionResult> InsertUserWithClass([FromBody] CreateUserVariablesFirstLastOrgClassUid userInfo)
         {
             try
             {
                 using (var connection = new NpgsqlConnection(ConnectionString.connectionstring))
                 {
                     await connection.OpenAsync();
-                    var query = "DELETE FROM Userinformation WHERE Uid = @Uid";
+                    var query = @"
+                        INSERT INTO Userinformation (firstname, lastname, uid, school_class, organisation, early_starter) 
+                        VALUES (@firstname, @lastname, @uid, @school_class, @organisation, @early_starter)
+                        RETURNING id;";
 
                     using (var command = new NpgsqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@Uid", Uid);
-                        
-                        int rowsAffected = await command.ExecuteNonQueryAsync();
+                        command.Parameters.AddWithValue("@firstname", userInfo.firstname);
+                        command.Parameters.AddWithValue("@lastname", userInfo.lastname);
+                        command.Parameters.AddWithValue("@uid", userInfo.uid);
+                        command.Parameters.AddWithValue("@school_class", userInfo.school_class);
+                        command.Parameters.AddWithValue("@organisation", userInfo.organisation);
+                        command.Parameters.AddWithValue("@early_starter", DBNull.Value);
 
-                        if (rowsAffected > 0)
-                        {
-                            return Ok($"User with Uid {Uid} has been deleted.");
-                        }
-                        else
-                        {
-                            return NotFound($"User with Uid {Uid} not found.");
-                        }
+                        var newUserId = await command.ExecuteScalarAsync();
+                        return Ok(new { Id = newUserId, Message = "Data inserted successfully." });
                     }
                 }
             }
@@ -61,29 +63,74 @@ namespace Laufevent.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
-    }
 
-    /// <summary>
-    /// Controller for retrieving user information based on the provided UID.
-    /// </summary>
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ReadUserUIDController : ControllerBase
-    {
+        /// <summary>
+        /// Inserts a new user without a school class.
+        /// </summary>
+        /// <param name="userInfo">User information including first name, last name, and organization.</param>
+        /// <returns>Returns the newly created user ID along with a success message.</returns>
+        [HttpPost("create/without-class")]
+        [SwaggerOperation(
+            Summary = "Create a user without school class",
+            Description = "Inserts user data (first name, last name, organization) into the database without school class."
+        )]
+        [SwaggerResponse(200, "Data inserted successfully.", typeof(object))]
+        [SwaggerResponse(400, "Bad Request - Invalid data provided.")]
+        [SwaggerResponse(500, "Internal Server Error.")]
+        public async Task<IActionResult> InsertUserWithoutClass([FromBody] CreateUserVariablesFirstLastOrgUid userInfo)
+        {
+            try
+            {
+                using (var connection = new NpgsqlConnection(ConnectionString.connectionstring))
+                {
+                    await connection.OpenAsync();
+                    var query = @"
+                        INSERT INTO Userinformation (firstname, lastname, uid, school_class, organisation, early_starter) 
+                        VALUES (@firstname, @lastname, @uid, @school_class, @organisation, @early_starter)
+                        RETURNING id;";
+
+                    using (var command = new NpgsqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@firstname", userInfo.firstname);
+                        command.Parameters.AddWithValue("@lastname", userInfo.lastname);
+                        command.Parameters.AddWithValue("@uid", userInfo.uid);
+                        command.Parameters.AddWithValue("@school_class", DBNull.Value);
+                        command.Parameters.AddWithValue("@early_starter", DBNull.Value);
+                        command.Parameters.AddWithValue("@organisation", userInfo.organisation);
+
+                        var newId = await command.ExecuteScalarAsync();
+                        return Ok(new { Id = newId, Message = "Data inserted successfully." });
+                    }
+                }
+            }
+            catch (NpgsqlException ex)
+            {
+                return StatusCode(500, $"Database error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region Read User by UID
+
         /// <summary>
         /// Retrieves user information based on the provided UID.
         /// </summary>
         /// <param name="uid">The UID of the user.</param>
         /// <returns>Returns the user details if found, otherwise a 404 not found error.</returns>
-        [HttpGet]
+        [HttpGet("read/by-uid")]
         [SwaggerOperation(
-            Summary = "Get user details by uid",
-            Description = "Fetches the complete user information for the given uid."
+            Summary = "Get user details by UID",
+            Description = "Fetches the complete user information for the given UID."
         )]
         [SwaggerResponse(200, "User details retrieved successfully.", typeof(object))]
-        [SwaggerResponse(404, "User with the specified uid not found.")]
+        [SwaggerResponse(404, "User with the specified UID not found.")]
         [SwaggerResponse(500, "Internal Server Error - Database issue or unexpected error.")]
-        public async Task<IActionResult> GetUserByUID(double uid)
+        public async Task<IActionResult> GetUserByUID([FromQuery] double uid)
         {
             try
             {
@@ -127,22 +174,18 @@ namespace Laufevent.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
-    }
 
-    /// <summary>
-    /// Controller for retrieving user information based on the provided first and last name.
-    /// </summary>
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ReadUserByNameController : ControllerBase
-    {
+        #endregion
+
+        #region Read User by Name
+
         /// <summary>
         /// Retrieves user information based on the provided first and last name.
         /// </summary>
         /// <param name="firstName">The user's first name.</param>
         /// <param name="lastName">The user's last name.</param>
         /// <returns>Returns the user details if found, otherwise a 404 not found error.</returns>
-        [HttpGet]
+        [HttpGet("read/by-name")]
         [SwaggerOperation(
             Summary = "Get user details by first and last name",
             Description = "Fetches the complete user information based on the first and last name."
@@ -195,15 +238,63 @@ namespace Laufevent.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
-    }
 
-    /// <summary>
-    /// Controller for updating user information based on the provided user ID.
-    /// </summary>
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ModifyUserController : ControllerBase
-    {
+        #endregion
+
+        #region Delete User
+
+        /// <summary>
+        /// Deletes a user by their UID.
+        /// </summary>
+        /// <param name="Uid">The UID of the user to be deleted.</param>
+        /// <returns>Returns a success or error message based on the outcome of the deletion.</returns>
+        [HttpDelete("delete/{Uid}")]
+        [SwaggerOperation(
+            Summary = "Delete a user by UID",
+            Description = "Deletes a user from the database based on their unique user UID."
+        )]
+        [SwaggerResponse(200, "User successfully deleted.", typeof(string))]
+        [SwaggerResponse(404, "User not found.")]
+        [SwaggerResponse(500, "Internal Server Error - Database issue or unexpected error.")]
+        public async Task<IActionResult> DeleteUserByUid(double Uid)
+        {
+            try
+            {
+                using (var connection = new NpgsqlConnection(ConnectionString.connectionstring))
+                {
+                    await connection.OpenAsync();
+                    var query = "DELETE FROM Userinformation WHERE uid = @Uid";
+
+                    using (var command = new NpgsqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Uid", Uid);
+
+                        int rowsAffected = await command.ExecuteNonQueryAsync();
+
+                        if (rowsAffected > 0)
+                        {
+                            return Ok($"User with UID {Uid} has been successfully deleted.");
+                        }
+                        else
+                        {
+                            return NotFound($"User with UID {Uid} not found.");
+                        }
+                    }
+                }
+            }
+            catch (NpgsqlException ex)
+            {
+                return StatusCode(500, $"Database error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
+
+        #endregion
+    
+    
         /// <summary>
         /// Updates user information for a specific user identified by ID.
         /// </summary>
@@ -213,7 +304,7 @@ namespace Laufevent.Controllers
         [HttpPut("{id}")]
         [SwaggerOperation(
             Summary = "Update user information by ID",
-            Description = "Updates user details such as first name, last name, UID, school class, and organization."
+            Description = "Updates user details such as first name, last name, uid, school class, and organization."
         )]
         [SwaggerResponse(200, "User details successfully updated.", typeof(string))]
         [SwaggerResponse(404, "User with the specified ID not found.")]
@@ -241,7 +332,7 @@ namespace Laufevent.Controllers
                         command.Parameters.AddWithValue("@id", id);
                         command.Parameters.AddWithValue("@firstName", userInfo.FirstName ?? (object)DBNull.Value);
                         command.Parameters.AddWithValue("@lastName", userInfo.LastName ?? (object)DBNull.Value);
-                        command.Parameters.AddWithValue("@uid", userInfo.Uid ?? (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@uid", userInfo.uid ?? (object)DBNull.Value);
                         command.Parameters.AddWithValue("@schoolClass", userInfo.SchoolClass ?? (object)DBNull.Value);
                         command.Parameters.AddWithValue("@organisation", userInfo.Organisation ?? (object)DBNull.Value);
 
@@ -267,17 +358,5 @@ namespace Laufevent.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
-    }
-
-    /// <summary>
-    /// Model to hold the information needed to update the user.
-    /// </summary>
-    public class UpdateUserModel
-    {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public double? Uid { get; set; }
-        public string SchoolClass { get; set; }
-        public string Organisation { get; set; }
     }
 }
