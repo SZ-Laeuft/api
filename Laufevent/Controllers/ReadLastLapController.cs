@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Laufevent.Controllers
+/*namespace Laufevent.Controllers
 {
     /// <summary>
     /// Controller for retrieving the lap duration based on the last two scan times for a given user ID.
@@ -78,4 +78,4 @@ namespace Laufevent.Controllers
             }
         }
     }
-}
+}*/
