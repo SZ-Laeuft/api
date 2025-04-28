@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿/*using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
@@ -71,4 +71,4 @@ namespace Laufevent.Controllers
             }
         }
     }
-}
+}*/
