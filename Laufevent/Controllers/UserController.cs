@@ -240,60 +240,7 @@ namespace Laufevent.Controllers
         }
 
         #endregion
-
-        #region Delete User
-
-        /// <summary>
-        /// Deletes a user by their UID.
-        /// </summary>
-        /// <param name="Uid">The UID of the user to be deleted.</param>
-        /// <returns>Returns a success or error message based on the outcome of the deletion.</returns>
-        [HttpDelete("delete/{Uid}")]
-        [SwaggerOperation(
-            Summary = "Delete a user by UID",
-            Description = "Deletes a user from the database based on their unique user UID."
-        )]
-        [SwaggerResponse(200, "User successfully deleted.", typeof(string))]
-        [SwaggerResponse(404, "User not found.")]
-        [SwaggerResponse(500, "Internal Server Error - Database issue or unexpected error.")]
-        public async Task<IActionResult> DeleteUserByUid(double Uid)
-        {
-            try
-            {
-                using (var connection = new NpgsqlConnection(ConnectionString.connectionstring))
-                {
-                    await connection.OpenAsync();
-                    var query = "DELETE FROM Userinformation WHERE uid = @Uid";
-
-                    using (var command = new NpgsqlCommand(query, connection))
-                    {
-                        command.Parameters.AddWithValue("@Uid", Uid);
-
-                        int rowsAffected = await command.ExecuteNonQueryAsync();
-
-                        if (rowsAffected > 0)
-                        {
-                            return Ok($"User with UID {Uid} has been successfully deleted.");
-                        }
-                        else
-                        {
-                            return NotFound($"User with UID {Uid} not found.");
-                        }
-                    }
-                }
-            }
-            catch (NpgsqlException ex)
-            {
-                return StatusCode(500, $"Database error: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
-            }
-        }
-
-        #endregion
-    
+        
     
         /// <summary>
         /// Updates user information for a specific user identified by ID.
@@ -358,5 +305,59 @@ namespace Laufevent.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
+
+        #region Delete User
+
+        /// <summary>
+        /// Deletes a user by their UID.
+        /// </summary>
+        /// <param name="Uid">The UID of the user to be deleted.</param>
+        /// <returns>Returns a success or error message based on the outcome of the deletion.</returns>
+        [HttpDelete("delete/{Uid}")]
+        [SwaggerOperation(
+            Summary = "Delete a user by UID",
+            Description = "Deletes a user from the database based on their unique user UID."
+        )]
+        [SwaggerResponse(200, "User successfully deleted.", typeof(string))]
+        [SwaggerResponse(404, "User not found.")]
+        [SwaggerResponse(500, "Internal Server Error - Database issue or unexpected error.")]
+        public async Task<IActionResult> DeleteUserByUid(double Uid)
+        {
+            try
+            {
+                using (var connection = new NpgsqlConnection(ConnectionString.connectionstring))
+                {
+                    await connection.OpenAsync();
+                    var query = "DELETE FROM Userinformation WHERE uid = @Uid";
+
+                    using (var command = new NpgsqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Uid", Uid);
+
+                        int rowsAffected = await command.ExecuteNonQueryAsync();
+
+                        if (rowsAffected > 0)
+                        {
+                            return Ok($"User with UID {Uid} has been successfully deleted.");
+                        }
+                        else
+                        {
+                            return NotFound($"User with UID {Uid} not found.");
+                        }
+                    }
+                }
+            }
+            catch (NpgsqlException ex)
+            {
+                return StatusCode(500, $"Database error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
+        }
+
+        #endregion
+    
     }
 }
