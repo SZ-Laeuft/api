@@ -39,16 +39,19 @@ namespace Laufevent.Controllers
                     NpgsqlDataReader reader = null;
                     NpgsqlCommand updateCommand = null;
 
-
                     try
                     {
+                        // Check if user exists and retrieve gift data
                         checkCommand = new NpgsqlCommand(@"SELECT gift_1, gift_2, gift_3 FROM user_gifts WHERE uid = @uid", connection);
                         checkCommand.Parameters.AddWithValue("@uid", uid);
                         reader = await checkCommand.ExecuteReaderAsync();
 
+                        // Ensure the reader is fully read before moving to the update
                         if (await reader.ReadAsync())
                         {
-                            //Moved the update logic into a separate command
+                            await reader.DisposeAsync(); // Dispose the reader before continuing
+
+                            // Moved the update logic into a separate command
                             updateCommand = new NpgsqlCommand(@"
                                     UPDATE user_gifts
                                     SET 
