@@ -35,40 +35,58 @@ namespace Laufevent.Controllers
                     await connection.OpenAsync();
 
                     // Use separate commands for checking and updating.
-                    using (var checkCommand = new NpgsqlCommand(@"SELECT gift_1, gift_2, gift_3 FROM user_gifts WHERE uid = @uid", connection))
+                    NpgsqlCommand checkCommand = null;
+                    NpgsqlDataReader reader = null;
+                    NpgsqlCommand updateCommand = null;
+
+
+                    try
                     {
+                        checkCommand = new NpgsqlCommand(@"SELECT gift_1, gift_2, gift_3 FROM user_gifts WHERE uid = @uid", connection);
                         checkCommand.Parameters.AddWithValue("@uid", uid);
+                        reader = await checkCommand.ExecuteReaderAsync();
 
-                        using (var reader = await checkCommand.ExecuteReaderAsync())
+                        if (await reader.ReadAsync())
                         {
-                            if (await reader.ReadAsync())
-                            {
-                                //Moved the update logic into a separate command
-                                using (var updateCommand = new NpgsqlCommand(@"
-                                        UPDATE user_gifts
-                                        SET 
-                                            gift_1_collected = CASE WHEN gift_1 THEN true ELSE gift_1_collected END,
-                                            gift_2_collected = CASE WHEN gift_2 THEN true ELSE gift_2_collected END,
-                                            gift_3_collected = CASE WHEN gift_3 THEN true ELSE gift_3_collected END
-                                        WHERE uid = @uid", connection))
-                                {
-                                    updateCommand.Parameters.AddWithValue("@uid", uid);
-                                    int rowsAffected = await updateCommand.ExecuteNonQueryAsync();
+                            //Moved the update logic into a separate command
+                            updateCommand = new NpgsqlCommand(@"
+                                    UPDATE user_gifts
+                                    SET 
+                                        gift_1_collected = CASE WHEN gift_1 THEN true ELSE gift_1_collected END,
+                                        gift_2_collected = CASE WHEN gift_2 THEN true ELSE gift_2_collected END,
+                                        gift_3_collected = CASE WHEN gift_3 THEN true ELSE gift_3_collected END
+                                    WHERE uid = @uid", connection);
+                            updateCommand.Parameters.AddWithValue("@uid", uid);
+                            int rowsAffected = await updateCommand.ExecuteNonQueryAsync();
 
-                                    if (rowsAffected > 0)
-                                    {
-                                        return Ok($"Gift collection status for user with UID {uid} has been updated.");
-                                    }
-                                    else
-                                    {
-                                        return NotFound($"User with UID {uid} not found.");
-                                    }
-                                }
+                            if (rowsAffected > 0)
+                            {
+                                return Ok($"Gift collection status for user with UID {uid} has been updated.");
                             }
                             else
                             {
                                 return NotFound($"User with UID {uid} not found.");
                             }
+                        }
+                        else
+                        {
+                            return NotFound($"User with UID {uid} not found.");
+                        }
+                    }
+                    finally
+                    {
+                        // Ensure that commands and readers are disposed of, even if exceptions occur.
+                        if (reader != null)
+                        {
+                            await reader.DisposeAsync();
+                        }
+                        if (checkCommand != null)
+                        {
+                            await checkCommand.DisposeAsync();
+                        }
+                        if (updateCommand != null)
+                        {
+                            await updateCommand.DisposeAsync();
                         }
                     }
                 }
