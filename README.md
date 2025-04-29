@@ -89,4 +89,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contact
 For questions or support, contact: [sz-laeuft@sz-ybbs.ac.at](mailto:sz-laeuft@sz-ybbs.ac.at)
-```
