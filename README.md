@@ -57,29 +57,6 @@ Here’s a look at the Swagger UI interface provided for testing API endpoints:
 
 ![Swagger UI Screenshot](swagger-ui.png)
 
-## API Endpoints
-
-### User Management
-
-#### Create User With Class
-- **POST** `/api/user/create/with-class`
-
-
-#### Create User Without Class
-- **POST** `/api/user/create/without-class`
-
-#### Get User by UID
-- **GET** `/api/user/read/by-uid`
-
-#### Get User by Name
-- **GET** `/api/user/read/by-name`
-
-#### Update User by ID
-- **PUT** `/api/user/{id}`
-
-
-#### Delete User by UID
-- **DELETE** `/api/user/delete/{uid}`
 
 ## Contributing
 This project was developed by students at **IT-HTL Ybbs** and is intended for educational use only. Contributions are limited to students of the institution.
