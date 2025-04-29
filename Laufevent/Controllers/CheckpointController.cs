@@ -36,61 +36,57 @@ namespace Laufevent.Controllers
                 {
                     await connection.OpenAsync();
 
-                    // Query user base info
+                    // Step 1: Get basic user info
                     const string userQuery = "SELECT * FROM Userinformation WHERE uid = @uid";
-                    using (var userCommand = new NpgsqlCommand(userQuery, connection))
+                    using var userCommand = new NpgsqlCommand(userQuery, connection);
+                    userCommand.Parameters.AddWithValue("@uid", uid);
+
+                    using var reader = await userCommand.ExecuteReaderAsync();
+
+                    if (!await reader.ReadAsync())
+                        return NotFound($"User with UID {uid} not found.");
+
+                    var firstName = reader["firstname"]?.ToString();
+                    var lastName = reader["lastname"]?.ToString();
+                    var fastestLap = reader["fastest_lap"] is DBNull
+                        ? null
+                        : reader.GetTimeSpan(reader.GetOrdinal("fastest_lap")).ToString(@"hh\:mm\:ss");
+
+                    await reader.CloseAsync(); // Needed before executing a new command on same connection
+
+                    // Step 2: Get round count
+                    const string roundCountQuery = "SELECT COUNT(*) FROM Rounds WHERE uid = @uid";
+                    using var roundCountCmd = new NpgsqlCommand(roundCountQuery, connection);
+                    roundCountCmd.Parameters.AddWithValue("@uid", uid);
+                    var roundCountResult = await roundCountCmd.ExecuteScalarAsync();
+                    var roundCount = Convert.ToInt32(roundCountResult);
+
+                    // Step 3: Get lap time (difference between last two scan times)
+                    const string lapTimeQuery = "SELECT Scantime FROM Rounds WHERE uid = @uid ORDER BY Scantime DESC LIMIT 2";
+                    using var lapTimeCommand = new NpgsqlCommand(lapTimeQuery, connection);
+                    lapTimeCommand.Parameters.AddWithValue("@uid", uid);
+
+                    var lapTimes = new List<DateTime>();
+                    using var lapReader = await lapTimeCommand.ExecuteReaderAsync();
+                    while (await lapReader.ReadAsync())
                     {
-                        userCommand.Parameters.AddWithValue("@uid", uid);
-                        using (var reader = await userCommand.ExecuteReaderAsync())
-                        {
-                            if (!await reader.ReadAsync())
-                                return NotFound($"User with UID {uid} not found.");
-
-                            var firstName = reader["firstname"]?.ToString();
-                            var lastName = reader["lastname"]?.ToString();
-                            var fastestLap = reader["fastest_lap"] is DBNull ? null :
-                                reader.GetTimeSpan(reader.GetOrdinal("fastest_lap")).ToString(@"hh\:mm\:ss");
-
-                            reader.Close();
-
-                            // Query Round Count
-                            const string countQuery = "SELECT COUNT(*) FROM Rounds WHERE uid = @uid";
-                            int roundCount = 0;
-                            using (var countCommand = new NpgsqlCommand(countQuery, connection))
-                            {
-                                countCommand.Parameters.AddWithValue("@uid", uid);
-                                roundCount = Convert.ToInt32(await countCommand.ExecuteScalarAsync());
-                            }
-
-                            // Query Last Two Lap Times
-                            const string lapQuery = "SELECT Scantime FROM Rounds WHERE uid = @uid ORDER BY Scantime DESC LIMIT 2";
-                            TimeSpan? lapDuration = null;
-                            using (var lapCommand = new NpgsqlCommand(lapQuery, connection))
-                            {
-                                lapCommand.Parameters.AddWithValue("@uid", uid);
-                                using (var lapReader = await lapCommand.ExecuteReaderAsync())
-                                {
-                                    var times = new List<DateTime>();
-                                    while (await lapReader.ReadAsync())
-                                        times.Add(lapReader.GetDateTime(0));
-
-                                    if (times.Count >= 2)
-                                        lapDuration = times[0] - times[1];
-                                }
-                            }
-
-                            var result = new
-                            {
-                                FirstName = firstName,
-                                LastName = lastName,
-                                RoundCount = roundCount,
-                                LapTime = lapDuration?.ToString(@"hh\:mm\:ss"),
-                                FastestLap = fastestLap
-                            };
-
-                            return Ok(result);
-                        }
+                        lapTimes.Add(lapReader.GetDateTime(0));
                     }
+
+                    string lapTime = lapTimes.Count >= 2
+                        ? (lapTimes[0] - lapTimes[1]).ToString(@"hh\:mm\:ss")
+                        : null;
+
+                    var user = new
+                    {
+                        FirstName = firstName,
+                        LastName = lastName,
+                        RoundCount = roundCount,
+                        LapTime = lapTime,
+                        FastestLap = fastestLap
+                    };
+
+                    return Ok(user);
                 }
             }
             catch (NpgsqlException ex)
@@ -102,6 +98,7 @@ namespace Laufevent.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
+
 
 
         #endregion
