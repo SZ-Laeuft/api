@@ -1,4 +1,4 @@
-```md
+
 # API – User Management System
 
 ## Overview
@@ -23,13 +23,12 @@ This project provides an API for managing user information, including creating, 
 Make sure PostgreSQL is running. You can use **DBeaver** to explore the database.
 
 Sample connection details for DBeaver:
-```
+
 Host: server-ip
 Port: 5432
 Database: db_name
 User: user_name
 Password: db_password
-```
 
 ### Running the API
 
