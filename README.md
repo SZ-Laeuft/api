@@ -55,7 +55,7 @@ http://server-name:server-port/swagger/index.html
 
 Here’s a look at the Swagger UI interface provided for testing API endpoints:
 
-![Swagger UI Screenshot](images/swagger-ui.png)
+![Swagger UI Screenshot](swagger-ui.png)
 
 ## API Endpoints
 
