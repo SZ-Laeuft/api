@@ -61,8 +61,5 @@ Here’s a look at the Swagger UI interface provided for testing API endpoints:
 ## Contributing
 This project was developed by students at **IT-HTL Ybbs** and is intended for educational use only. Contributions are limited to students of the institution.
 
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
 ## Contact
 For questions or support, contact: [sz-laeuft@sz-ybbs.ac.at](mailto:sz-laeuft@sz-ybbs.ac.at)
