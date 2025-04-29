@@ -36,46 +36,50 @@ namespace Laufevent.Controllers
                 {
                     await connection.OpenAsync();
 
-                    // Step 1: Get basic user info
-                    const string userQuery = "SELECT * FROM Userinformation WHERE uid = @uid";
-                    using var userCommand = new NpgsqlCommand(userQuery, connection);
-                    userCommand.Parameters.AddWithValue("@uid", uid);
+                    const string query = @"
+                        SELECT 
+                            ui.firstname,
+                            ui.lastname,
+                            ui.fastest_lap,
+                            (
+                                SELECT COUNT(*) 
+                                FROM rounds 
+                                WHERE uid = ui.uid
+                            ) AS round_count,
+                            (
+                                SELECT 
+                                    r1.scantime - r2.scantime 
+                                FROM rounds r1 
+                                JOIN rounds r2 ON r1.uid = r2.uid 
+                                WHERE r1.uid = ui.uid 
+                                ORDER BY r1.scantime DESC 
+                                LIMIT 1 OFFSET 1
+                            ) AS lap_time
+                        FROM userinformation ui
+                        WHERE ui.uid = @uid";
 
-                    using var reader = await userCommand.ExecuteReaderAsync();
+                    using var command = new NpgsqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@uid", uid);
+
+                    using var reader = await command.ExecuteReaderAsync();
 
                     if (!await reader.ReadAsync())
                         return NotFound($"User with UID {uid} not found.");
 
                     var firstName = reader["firstname"]?.ToString();
                     var lastName = reader["lastname"]?.ToString();
-                    var fastestLap = reader["fastest_lap"] is DBNull
+
+                    string fastestLap = reader["fastest_lap"] is DBNull
                         ? null
-                        : reader.GetTimeSpan(reader.GetOrdinal("fastest_lap")).ToString(@"hh\:mm\:ss");
+                        : ((TimeSpan)reader["fastest_lap"]).ToString(@"hh\:mm\:ss");
 
-                    await reader.CloseAsync(); // Needed before executing a new command on same connection
+                    string lapTime = reader["lap_time"] is DBNull
+                        ? null
+                        : ((TimeSpan)reader["lap_time"]).ToString(@"hh\:mm\:ss");
 
-                    // Step 2: Get round count
-                    const string roundCountQuery = "SELECT COUNT(*) FROM Rounds WHERE uid = @uid";
-                    using var roundCountCmd = new NpgsqlCommand(roundCountQuery, connection);
-                    roundCountCmd.Parameters.AddWithValue("@uid", uid);
-                    var roundCountResult = await roundCountCmd.ExecuteScalarAsync();
-                    var roundCount = Convert.ToInt32(roundCountResult);
-
-                    // Step 3: Get lap time (difference between last two scan times)
-                    const string lapTimeQuery = "SELECT Scantime FROM Rounds WHERE uid = @uid ORDER BY Scantime DESC LIMIT 2";
-                    using var lapTimeCommand = new NpgsqlCommand(lapTimeQuery, connection);
-                    lapTimeCommand.Parameters.AddWithValue("@uid", uid);
-
-                    var lapTimes = new List<DateTime>();
-                    using var lapReader = await lapTimeCommand.ExecuteReaderAsync();
-                    while (await lapReader.ReadAsync())
-                    {
-                        lapTimes.Add(lapReader.GetDateTime(0));
-                    }
-
-                    string lapTime = lapTimes.Count >= 2
-                        ? (lapTimes[0] - lapTimes[1]).ToString(@"hh\:mm\:ss")
-                        : null;
+                    int roundCount = reader["round_count"] is DBNull
+                        ? 0
+                        : Convert.ToInt32(reader["round_count"]);
 
                     var user = new
                     {
@@ -98,8 +102,6 @@ namespace Laufevent.Controllers
                 return StatusCode(500, $"An error occurred: {ex.Message}");
             }
         }
-
-
 
         #endregion
     
