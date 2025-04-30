@@ -76,46 +76,46 @@ namespace Laufevent.Controllers
                 {
                     await connection.OpenAsync();
 
-                    var query = @"SELECT Scantime FROM Rounds WHERE uid = @uid ORDER BY Scantime DESC LIMIT 2";
+                    var query = @"
+                WITH last_two_rounds AS (
+                    SELECT
+                        scantime,
+                        ROW_NUMBER() OVER (ORDER BY scantime DESC) AS rn
+                    FROM public.rounds
+                    WHERE uid = @uid
+                )
+                SELECT 
+                    t1.scantime - t2.scantime AS laptime
+                FROM last_two_rounds t1
+                JOIN last_two_rounds t2 ON t1.rn = 1 AND t2.rn = 2;
+            ";
 
                     using (var command = new NpgsqlCommand(query, connection))
                     {
                         command.Parameters.AddWithValue("@uid", uid);
 
-                        using (var reader = await command.ExecuteReaderAsync())
+                        var result = await command.ExecuteScalarAsync();
+
+                        if (result != null && result != DBNull.Value)
                         {
-                            var times = new List<DateTime>();
-
-                            while (await reader.ReadAsync())
+                            if (result != null && result != DBNull.Value)
                             {
-                                times.Add(reader.GetDateTime(0));
+                                var laptime = (TimeSpan)result;
+                                string formattedLapTime = laptime.ToString(@"hh\:mm\:ss"); 
+                                return Ok(formattedLapTime);
                             }
-
-                            if (times.Count < 2)
-                            {
-                                return NotFound($"Not enough data for UID {uid} to calculate lap duration.");
-                            }
-
-                            var lapDuration = times[0] - times[1];
-
-                            var result = new
-                            {
-                                UId = uid,
-                                LapDuration = lapDuration.ToString(@"hh\:mm\:ss")
-                            };
-
-                            return Ok(result);
+                            return NotFound("Not enough rounds to calculate lap time.");
+                        }
+                        else
+                        {
+                            return NotFound("Not enough rounds to calculate lap time.");
                         }
                     }
                 }
             }
-            catch (NpgsqlException ex)
-            {
-                return StatusCode(500, $"Database error: {ex.Message}");
-            }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred: {ex.Message}");
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
 
