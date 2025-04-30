@@ -48,12 +48,16 @@ namespace Laufevent.Controllers
                             ) AS round_count,
                             (
                                 SELECT 
-                                    r1.scantime - r2.scantime 
-                                FROM rounds r1 
-                                JOIN rounds r2 ON r1.uid = r2.uid 
-                                WHERE r1.uid = ui.uid 
-                                ORDER BY r1.scantime DESC 
-                                LIMIT 1 OFFSET 1
+                                    CASE 
+                                        WHEN COUNT(*) >= 2 THEN
+                                            (SELECT scantime FROM rounds WHERE uid = ui.uid ORDER BY scantime DESC LIMIT 1 OFFSET 0) -
+                                            (SELECT scantime FROM rounds WHERE uid = ui.uid ORDER BY scantime DESC LIMIT 1 OFFSET 1)
+                                        ELSE
+                                            NULL
+                                    END
+                                FROM rounds
+                                WHERE uid = ui.uid
+                                LIMIT 1
                             ) AS lap_time
                         FROM userinformation ui
                         WHERE ui.uid = @uid";
