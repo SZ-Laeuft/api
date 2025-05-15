@@ -130,7 +130,7 @@ namespace Laufevent.Controllers
         [SwaggerResponse(200, "User details retrieved successfully.", typeof(object))]
         [SwaggerResponse(404, "User with the specified UID not found.")]
         [SwaggerResponse(500, "Internal Server Error - Database issue or unexpected error.")]
-        public async Task<IActionResult> GetUserByUID([FromQuery] double uid)
+        public async Task<IActionResult> GetUserByUID([FromQuery] long uid)
         {
             try
             {
@@ -152,7 +152,7 @@ namespace Laufevent.Controllers
                                     Id = reader["id"] is DBNull ? 0 : Convert.ToInt32(reader["id"]),
                                     FirstName = reader["firstname"]?.ToString(),
                                     LastName = reader["lastname"]?.ToString(),
-                                    Uid = reader["uid"] is DBNull ? 0.0 : Convert.ToDouble(reader["uid"]),
+                                    Uid = reader["uid"] is DBNull ? 0L : Convert.ToInt64(reader["uid"]),
                                     SchoolClass = reader["school_class"]?.ToString(),
                                     Organisation = reader["organisation"]?.ToString(),
                                     FastestLap = reader["fastest_lap"] is DBNull ? null : reader.GetTimeSpan(reader.GetOrdinal("fastest_lap")).ToString(@"hh\:mm\:ss"),
@@ -216,7 +216,7 @@ namespace Laufevent.Controllers
                                     Id = reader["id"] is DBNull ? 0 : Convert.ToInt32(reader["id"]),
                                     FirstName = reader["firstname"]?.ToString(),
                                     LastName = reader["lastname"]?.ToString(),
-                                    Uid = reader["uid"] is DBNull ? 0.0 : Convert.ToDouble(reader["uid"]),
+                                    Uid = reader["uid"] is DBNull ? 0L : Convert.ToInt64(reader["uid"]),
                                     SchoolClass = reader["school_class"]?.ToString(),
                                     Organisation = reader["organisation"]?.ToString(),
                                     FastestLap = reader["fastest_lap"] is DBNull ? null : reader.GetTimeSpan(reader.GetOrdinal("fastest_lap")).ToString(@"hh\:mm\:ss"),
@@ -321,7 +321,7 @@ namespace Laufevent.Controllers
         [SwaggerResponse(200, "User successfully deleted.", typeof(string))]
         [SwaggerResponse(404, "User not found.")]
         [SwaggerResponse(500, "Internal Server Error - Database issue or unexpected error.")]
-        public async Task<IActionResult> DeleteUserByUid(double Uid)
+        public async Task<IActionResult> DeleteUserByUid(long Uid)
         {
             try
             {

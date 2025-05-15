@@ -5,5 +5,5 @@ public class CompleteRoundVariables
 {
     [Required] 
     [DefaultValue(0.0)]  
-    public double uid { get; set; }
+    public long uid { get; set; }
 }

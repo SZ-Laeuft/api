@@ -26,7 +26,7 @@ namespace Laufevent.Controllers
         [SwaggerResponse(400, "Invalid input data provided.")]
         [SwaggerResponse(404, "User with the specified UID not found.")]
         [SwaggerResponse(500, "Internal Server Error - Database issue or unexpected error.")]
-        public async Task<IActionResult> UpdateUserByUId(double uid, [FromBody] ChangeAmount userInfo)
+        public async Task<IActionResult> UpdateUserByUId(long uid, [FromBody] ChangeAmount userInfo)
         {
             if (userInfo == null || userInfo.Amount <= 0)
             {
