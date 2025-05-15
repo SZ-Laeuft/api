@@ -15,7 +15,7 @@ namespace Laufevent
          public string organisation { get; set; }
          
         [Required][DefaultValue("")] 
-        public long uid { get; set; }
+        public decimal uid { get; set; }
         
 
     }

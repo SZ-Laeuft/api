@@ -8,7 +8,7 @@ public class UpdateUserModel
     [Required][DefaultValue("")]
     public string? LastName { get; set; }
     [DefaultValue("")]
-    public long? uid { get; set; }
+    public decimal? uid { get; set; }
     [DefaultValue("")]
     public string? SchoolClass { get; set; }
     [DefaultValue("")]

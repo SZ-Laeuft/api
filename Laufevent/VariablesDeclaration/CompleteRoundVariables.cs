@@ -5,5 +5,5 @@ public class CompleteRoundVariables
 {
     [Required] 
     [DefaultValue(0.0)]  
-    public long uid { get; set; }
+    public decimal uid { get; set; }
 }

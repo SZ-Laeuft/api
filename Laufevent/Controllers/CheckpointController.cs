@@ -28,7 +28,7 @@ namespace Laufevent.Controllers
         [SwaggerResponse(200, "User details retrieved successfully.", typeof(object))]
         [SwaggerResponse(404, "User with the specified UID not found.")]
         [SwaggerResponse(500, "Internal Server Error - Database issue or unexpected error.")]
-        public async Task<IActionResult> GetCIByUID([FromQuery] long uid)
+        public async Task<IActionResult> GetCIByUID([FromQuery] decimal uid)
         {
             try
             {

@@ -68,7 +68,7 @@ namespace Laufevent.Controllers
         [SwaggerResponse(200, "Lap duration successfully calculated.", typeof(object))]
         [SwaggerResponse(404, "Not enough data to calculate lap duration.")]
         [SwaggerResponse(500, "Internal Server Error - Database issue or unexpected error.")]
-        public async Task<IActionResult> GetLastLapById(long uid)
+        public async Task<IActionResult> GetLastLapById(decimal uid)
         {
             try
             {
@@ -132,7 +132,7 @@ namespace Laufevent.Controllers
         [SwaggerResponse(200, "Rounds count successfully retrieved.", typeof(object))]
         [SwaggerResponse(404, "No rounds found for the given user Uid.")]
         [SwaggerResponse(500, "Internal Server Error - Database issue or unexpected error.")]
-        public async Task<IActionResult> GetRoundsCountByUid(long Uid)
+        public async Task<IActionResult> GetRoundsCountByUid(decimal Uid)
         {
             try
             {

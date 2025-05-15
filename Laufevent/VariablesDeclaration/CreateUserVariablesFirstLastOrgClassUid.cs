@@ -17,5 +17,5 @@ public class CreateUserVariablesFirstLastOrgClassUid
     public string school_class { get; set; }
     
     [Required][DefaultValue("")] 
-    public double uid { get; set; }
+    public decimal uid { get; set; }
 }

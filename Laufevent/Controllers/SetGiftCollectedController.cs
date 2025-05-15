@@ -26,7 +26,7 @@ namespace Laufevent.Controllers
         [SwaggerResponse(200, "Gift collection status successfully updated.", typeof(string))]
         [SwaggerResponse(404, "User with the specified UID not found.")]
         [SwaggerResponse(500, "Internal Server Error - Database issue or unexpected error.")]
-        public async Task<IActionResult> UpdateUserGiftCollection(long uid)
+        public async Task<IActionResult> UpdateUserGiftCollection(decimal uid)
         {
             try
             {
