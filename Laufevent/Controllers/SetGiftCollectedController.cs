@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Npgsql;
 using Swashbuckle.AspNetCore.Annotations;
+using System;
 using System.Threading.Tasks;
 
 namespace Laufevent.Controllers
@@ -17,13 +18,13 @@ namespace Laufevent.Controllers
         /// Checks if gift 1, 2, or 3 are set to true, and updates the corresponding collection status for each gift.
         /// </summary>
         /// <param name="uid">The UID of the user whose gifts are to be updated.</param>
-        /// <returns>Returns a message indicating the result of the operation.</returns>
+        /// <returns>Returns a message indicating the result of the operation and which gifts were updated.</returns>
         [HttpPut("{uid}")]
         [SwaggerOperation(
             Summary = "Update collection status for gifts by UID",
             Description = "Checks if gift 1, 2, or 3 are set to true. If they are, updates the corresponding collection status for each gift."
         )]
-        [SwaggerResponse(200, "Gift collection status successfully updated.", typeof(string))]
+        [SwaggerResponse(200, "Gift collection status successfully updated.", typeof(object))]
         [SwaggerResponse(404, "User with the specified UID not found.")]
         [SwaggerResponse(500, "Internal Server Error - Database issue or unexpected error.")]
         public async Task<IActionResult> UpdateUserGiftCollection(decimal uid)
@@ -34,62 +35,54 @@ namespace Laufevent.Controllers
                 {
                     await connection.OpenAsync();
 
-                    // Use separate commands for checking and updating.
-                    NpgsqlCommand checkCommand = null;
-                    NpgsqlDataReader reader = null;
-                    NpgsqlCommand updateCommand = null;
+                    const string checkQuery = @"SELECT gift_1, gift_2, gift_3, gift_1_collected, gift_2_collected, gift_3_collected
+                                                FROM user_gifts WHERE uid = @uid";
 
-                    try
+                    using (var checkCommand = new NpgsqlCommand(checkQuery, connection))
                     {
-                        // Check if user exists and retrieve gift data
-                        checkCommand = new NpgsqlCommand(@"SELECT gift_1, gift_2, gift_3 FROM user_gifts WHERE uid = @uid", connection);
                         checkCommand.Parameters.AddWithValue("@uid", uid);
-                        reader = await checkCommand.ExecuteReaderAsync();
 
-                        // Ensure the reader is fully read before moving to the update
-                        if (await reader.ReadAsync())
+                        using (var reader = await checkCommand.ExecuteReaderAsync())
                         {
-                            await reader.DisposeAsync(); // Dispose the reader before continuing
-
-                            // Moved the update logic into a separate command
-                            updateCommand = new NpgsqlCommand(@"
-                                    UPDATE user_gifts
-                                    SET 
-                                        gift_1_collected = CASE WHEN gift_1 THEN true ELSE gift_1_collected END,
-                                        gift_2_collected = CASE WHEN gift_2 THEN true ELSE gift_2_collected END,
-                                        gift_3_collected = CASE WHEN gift_3 THEN true ELSE gift_3_collected END
-                                    WHERE uid = @uid", connection);
-                            updateCommand.Parameters.AddWithValue("@uid", uid);
-                            int rowsAffected = await updateCommand.ExecuteNonQueryAsync();
-
-                            if (rowsAffected > 0)
-                            {
-                                return Ok($"Gift collection status for user with UID {uid} has been updated.");
-                            }
-                            else
-                            {
+                            if (!await reader.ReadAsync())
                                 return NotFound($"User with UID {uid} not found.");
+
+                            bool gift1 = reader.GetBoolean(reader.GetOrdinal("gift_1"));
+                            bool gift2 = reader.GetBoolean(reader.GetOrdinal("gift_2"));
+                            bool gift3 = reader.GetBoolean(reader.GetOrdinal("gift_3"));
+
+                            bool gift1Collected = reader.GetBoolean(reader.GetOrdinal("gift_1_collected"));
+                            bool gift2Collected = reader.GetBoolean(reader.GetOrdinal("gift_2_collected"));
+                            bool gift3Collected = reader.GetBoolean(reader.GetOrdinal("gift_3_collected"));
+
+                            await reader.CloseAsync();
+
+                            const string updateQuery = @"
+                                UPDATE user_gifts
+                                SET
+                                    gift_1_collected = CASE WHEN gift_1 THEN true ELSE gift_1_collected END,
+                                    gift_2_collected = CASE WHEN gift_2 THEN true ELSE gift_2_collected END,
+                                    gift_3_collected = CASE WHEN gift_3 THEN true ELSE gift_3_collected END
+                                WHERE uid = @uid";
+
+                            using (var updateCommand = new NpgsqlCommand(updateQuery, connection))
+                            {
+                                updateCommand.Parameters.AddWithValue("@uid", uid);
+                                await updateCommand.ExecuteNonQueryAsync();
                             }
-                        }
-                        else
-                        {
-                            return NotFound($"User with UID {uid} not found.");
-                        }
-                    }
-                    finally
-                    {
-                        // Ensure that commands and readers are disposed of, even if exceptions occur.
-                        if (reader != null)
-                        {
-                            await reader.DisposeAsync();
-                        }
-                        if (checkCommand != null)
-                        {
-                            await checkCommand.DisposeAsync();
-                        }
-                        if (updateCommand != null)
-                        {
-                            await updateCommand.DisposeAsync();
+
+                            var updatedGifts = new
+                            {
+                                Gift1Collected = gift1 && !gift1Collected,
+                                Gift2Collected = gift2 && !gift2Collected,
+                                Gift3Collected = gift3 && !gift3Collected
+                            };
+
+                            return Ok(new
+                            {
+                                Message = $"Gift collection status for user with UID {uid} has been updated.",
+                                UpdatedGifts = updatedGifts
+                            });
                         }
                     }
                 }
