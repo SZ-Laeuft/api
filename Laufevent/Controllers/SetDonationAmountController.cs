@@ -4,25 +4,16 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace Laufevent.Controllers
 {
-    /// <summary>
-    /// Controller for adding or updating a user's donation amount.
-    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class SetDonationAmountController : ControllerBase
     {
-        /// <summary>
-        /// Updates the donation amount for a user identified by their UID.
-        /// </summary>
-        /// <param name="uid">The UID of the user whose donation amount will be updated.</param>
-        /// <param name="userInfo">An object containing the donation amount to be added to the user's current donation amount.</param>
-        /// <returns>Returns a message indicating the result of the operation.</returns>
         [HttpPut("{uid}")]
         [SwaggerOperation(
             Summary = "Update donation amount by UID",
-            Description = "Updates the donation amount for a specific user identified by their UID. The donation amount is provided in the request body."
+            Description = "Adds the input donation amount to the current amount for a specific user identified by their UID."
         )]
-        [SwaggerResponse(200, "Donation amount successfully updated for the user.", typeof(string))]
+        [SwaggerResponse(200, "Donation amount successfully updated for the user.", typeof(object))]
         [SwaggerResponse(400, "Invalid input data provided.")]
         [SwaggerResponse(404, "User with the specified UID not found.")]
         [SwaggerResponse(500, "Internal Server Error - Database issue or unexpected error.")]
@@ -39,22 +30,47 @@ namespace Laufevent.Controllers
                 {
                     await connection.OpenAsync();
 
-                    var query = @"
-                        UPDATE USER_DONATIONS 
-                        SET 
-                           amount = @amount
+                    
+                    const string selectQuery = "SELECT amount FROM USER_DONATIONS WHERE uid = @uid";
+                    decimal currentAmount;
+
+                    using (var selectCommand = new NpgsqlCommand(selectQuery, connection))
+                    {
+                        selectCommand.Parameters.AddWithValue("@uid", uid);
+
+                        var result = await selectCommand.ExecuteScalarAsync();
+                        if (result == null)
+                        {
+                            return NotFound($"User with UID {uid} not found.");
+                        }
+
+                        currentAmount = Convert.ToDecimal(result);
+                    }
+
+                    // Calculate the new amount
+                    decimal newAmount = currentAmount + Convert.ToDecimal(userInfo.Amount);
+
+                    const string updateQuery = @"
+                        UPDATE USER_DONATIONS
+                        SET amount = @amount
                         WHERE uid = @uid";
 
-                    using (var command = new NpgsqlCommand(query, connection))
+                    using (var updateCommand = new NpgsqlCommand(updateQuery, connection))
                     {
-                        command.Parameters.AddWithValue("@uid", uid);
-                        command.Parameters.AddWithValue("@amount", userInfo.Amount);
+                        updateCommand.Parameters.AddWithValue("@uid", uid);
+                        updateCommand.Parameters.AddWithValue("@amount", newAmount);
 
-                        var rowsAffected = await command.ExecuteNonQueryAsync();
+                        var rowsAffected = await updateCommand.ExecuteNonQueryAsync();
 
                         if (rowsAffected > 0)
                         {
-                            return Ok($"User with UID {uid} successfully updated. New donation amount: {userInfo.Amount}");
+                            return Ok(new
+                            {
+                                Message = $"User with UID {uid} successfully updated.",
+                                PreviousAmount = currentAmount,
+                                InputAmount = userInfo.Amount,
+                                NewAmount = newAmount
+                            });
                         }
                         else
                         {
@@ -74,14 +90,8 @@ namespace Laufevent.Controllers
         }
     }
 
-    /// <summary>
-    /// Model for updating the user's donation amount.
-    /// </summary>
     public class ChangeAmount
     {
-        /// <summary>
-        /// The amount to be added to the user's donation.
-        /// </summary>
         public double Amount { get; set; }
     }
 }

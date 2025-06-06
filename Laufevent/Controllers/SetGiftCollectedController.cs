@@ -44,6 +44,7 @@ namespace Laufevent.Controllers
 
                         using (var reader = await checkCommand.ExecuteReaderAsync())
                         {
+
                             if (!await reader.ReadAsync())
                                 return NotFound($"User with UID {uid} not found.");
 
