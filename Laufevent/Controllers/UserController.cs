@@ -248,15 +248,15 @@ namespace Laufevent.Controllers
         /// <param name="id">The ID of the user to be updated.</param>
         /// <param name="userInfo">An object containing the updated user details.</param>
         /// <returns>Returns a message indicating the result of the update operation.</returns>
-        [HttpPut("{id}")]
+        [HttpPut("{uid}")]
         [SwaggerOperation(
-            Summary = "Update user information by ID",
+            Summary = "Update user information by UID",
             Description = "Updates user details such as first name, last name, uid, school class, and organization."
         )]
         [SwaggerResponse(200, "User details successfully updated.", typeof(string))]
-        [SwaggerResponse(404, "User with the specified ID not found.")]
+        [SwaggerResponse(404, "User with the specified UID not found.")]
         [SwaggerResponse(500, "Internal Server Error - Database issue or unexpected error.")]
-        public async Task<IActionResult> UpdateUserById(int id, [FromBody] UpdateUserModel userInfo)
+        public async Task<IActionResult> UpdateUserById(decimal uid, [FromBody] UpdateUserModel userInfo)
         {
             try
             {
@@ -276,7 +276,7 @@ namespace Laufevent.Controllers
 
                     using (var command = new NpgsqlCommand(query, connection))
                     {
-                        command.Parameters.AddWithValue("@id", id);
+                        command.Parameters.AddWithValue("@uid", uid);
                         command.Parameters.AddWithValue("@firstName", userInfo.FirstName ?? (object)DBNull.Value);
                         command.Parameters.AddWithValue("@lastName", userInfo.LastName ?? (object)DBNull.Value);
                         command.Parameters.AddWithValue("@uid", userInfo.uid ?? (object)DBNull.Value);
@@ -287,11 +287,11 @@ namespace Laufevent.Controllers
 
                         if (rowsAffected > 0)
                         {
-                            return Ok($"User with ID {id} successfully updated.");
+                            return Ok($"User with ID {uid} successfully updated.");
                         }
                         else
                         {
-                            return NotFound($"User with ID {id} not found.");
+                            return NotFound($"User with ID {uid} not found.");
                         }
                     }
                 }
